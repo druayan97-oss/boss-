@@ -6,3 +6,6 @@ node_modules/
 dist/
 build/
 *.log
+
+# 工作日志仅本地留存，不同步仓库
+worklogs/
