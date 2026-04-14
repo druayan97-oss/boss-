@@ -1,6 +1,8 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { AppShell } from '@/app/AppShell';
 import { WeeklyPage } from '@/pages/WeeklyPage';
+import { BoardPage } from '@/pages/BoardPage';
+import { HrDetailPage } from '@/pages/HrDetailPage';
 
 function StubPage({ title, description }: { title: string; description: string }) {
   return (
@@ -15,13 +17,8 @@ function StubPage({ title, description }: { title: string; description: string }
 }
 
 const routeStubs = {
-  board: (
-    <StubPage
-      title="榜单"
-      description="这里会展示不同维度的榜单入口与排名内容，目前仅保留路由占位。"
-    />
-  ),
-  hr: <StubPage title="Boss 资料" description="后续会接入 Boss 详情与互动卡片。" />,
+  board: <BoardPage />,
+  hr: <HrDetailPage />,
   nominate: <StubPage title="推荐 Boss" description="后续会接入推荐提名流程与表单。" />,
   play: <StubPage title="猜 Boss" description="后续会接入 Boss 猜测与互动模拟流程。" />,
   session: <StubPage title="猜 Boss 会话" description="后续会接入单次会话的状态与内容。" />,
