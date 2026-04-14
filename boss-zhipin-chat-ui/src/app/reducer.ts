@@ -72,7 +72,7 @@ export function reducer(state: AppState, action: Action): AppState {
         auth: {
           currentUserId: 'demo-user',
           loginOpen: false,
-          postLoginPath: state.auth.postLoginPath,
+          postLoginPath: null,
         },
       };
     case 'profile/save':

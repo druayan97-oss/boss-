@@ -3,6 +3,8 @@ import { AppShell } from '@/app/AppShell';
 import { WeeklyPage } from '@/pages/WeeklyPage';
 import { BoardPage } from '@/pages/BoardPage';
 import { HrDetailPage } from '@/pages/HrDetailPage';
+import { NominationPage } from '@/pages/NominationPage';
+import { SettingsPage } from '@/pages/SettingsPage';
 
 function StubPage({ title, description }: { title: string; description: string }) {
   return (
@@ -19,11 +21,11 @@ function StubPage({ title, description }: { title: string; description: string }
 const routeStubs = {
   board: <BoardPage />,
   hr: <HrDetailPage />,
-  nominate: <StubPage title="推荐 Boss" description="后续会接入推荐提名流程与表单。" />,
+  nominate: <NominationPage />,
   play: <StubPage title="猜 Boss" description="后续会接入 Boss 猜测与互动模拟流程。" />,
   session: <StubPage title="猜 Boss 会话" description="后续会接入单次会话的状态与内容。" />,
   result: <StubPage title="猜 Boss 结果" description="后续会接入会话结果、命中率与复盘。" />,
-  settings: <StubPage title="我的档案" description="后续会接入个人设置与资料面板。" />,
+  settings: <SettingsPage />,
 };
 
 export const router = createBrowserRouter([
