@@ -147,3 +147,9 @@ textarea {
   height: 15rem;
   background: rgba(255, 255, 255, 0.66);
 }
+
+@media (max-width: 767px) {
+  body {
+    background: linear-gradient(180deg, #e6f5f3 0%, #f8fbfc 100%);
+  }
+}

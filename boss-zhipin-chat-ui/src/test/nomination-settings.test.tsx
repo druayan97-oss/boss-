@@ -142,6 +142,53 @@ describe('nomination and settings flow', () => {
     expect(screen.getByLabelText('专业门类')).toHaveValue('business');
   });
 
+  it('propagates add and remove changes to a Nice HR nomination into the HR detail page and Nice HR board', async () => {
+    const user = userEvent.setup();
+
+    window.history.pushState({}, '', '/nominate?bossId=boss-startup-yang');
+    const { default: App } = await import('@/App');
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: '推荐 Boss' })).toBeInTheDocument();
+
+    await user.clear(screen.getByLabelText('标签'));
+    await user.type(screen.getByLabelText('标签'), 'Nice HR');
+    await user.click(screen.getByRole('button', { name: '提交提名' }));
+
+    expect(screen.getByRole('dialog', { name: '登录后继续' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '模拟登录' }));
+    await user.click(screen.getByRole('button', { name: '提交提名' }));
+
+    expect(await screen.findByText('提名已提交')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '杨先生' })).toBeInTheDocument();
+    expect(screen.getAllByText('Nice HR', { selector: 'span' }).length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole('link', { name: '榜单' }));
+    await user.click(screen.getByRole('button', { name: 'Nice HR' }));
+
+    expect(await screen.findByRole('heading', { name: 'Nice HR 榜' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '杨先生' })).toBeInTheDocument();
+
+    await user.click(screen.getAllByRole('link', { name: '查看详情' })[1]);
+    await user.click(screen.getByRole('button', { name: '提名 / 更新提名' }));
+
+    await user.clear(screen.getByLabelText('标签'));
+    await user.type(screen.getByLabelText('标签'), '数据建设中');
+    await user.click(screen.getByRole('button', { name: '提交提名' }));
+
+    expect(await screen.findByText('提名已更新')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '杨先生' })).toBeInTheDocument();
+    expect(screen.queryByText('Nice HR', { selector: 'span' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('link', { name: '榜单' }));
+    await user.click(screen.getByRole('button', { name: 'Nice HR' }));
+
+    expect(await screen.findByRole('heading', { name: 'Nice HR 榜' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '杨先生' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '邢女士' })).toBeInTheDocument();
+  });
+
   it('clears stale post-login paths after demo login', () => {
     const nextState = reducer(
       {

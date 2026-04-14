@@ -1,4 +1,4 @@
-import type { AppState, BoardType, NominationRecord, PlaySession, ProfileState } from '@/types/domain';
+import type { AppState, BoardType, BossProfile, NominationRecord, PlaySession, ProfileState } from '@/types/domain';
 
 export type Action =
   | { type: 'boards/select'; board: BoardType }
@@ -18,6 +18,37 @@ function makeToastId() {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `toast-${Date.now()}`;
 }
 
+function getStaticBoardTags(boss: BossProfile) {
+  const tags: string[] = [];
+
+  if (boss.lowSample) {
+    tags.push('数据建设中');
+  }
+
+  if (boss.boardTags.includes('样本充足')) {
+    tags.push('样本充足');
+  }
+
+  return tags;
+}
+
+function getNominationLabels(nominations: NominationRecord[], staticTags: string[]) {
+  const labels: string[] = [];
+  const staticTagSet = new Set(staticTags);
+
+  for (const nomination of nominations) {
+    for (const label of nomination.labels) {
+      if (staticTagSet.has(label) || labels.includes(label)) {
+        continue;
+      }
+
+      labels.push(label);
+    }
+  }
+
+  return labels;
+}
+
 function updateBossSummary(state: AppState, nomination: NominationRecord) {
   const existing = state.nominations.find(
     (record) => record.bossId === nomination.bossId && record.submittedBy === nomination.submittedBy,
@@ -27,12 +58,23 @@ function updateBossSummary(state: AppState, nomination: NominationRecord) {
     ? state.nominations.map((record) => (record.id === existing.id ? nomination : record))
     : [nomination, ...state.nominations];
 
+  const boss = state.bosses.find((item) => item.id === nomination.bossId);
+  const staticTags = boss ? getStaticBoardTags(boss) : [];
+  const boardTags = [
+    ...staticTags,
+    ...getNominationLabels(
+      nominations.filter((record) => record.bossId === nomination.bossId),
+      staticTags,
+    ),
+  ];
+
   const bosses = state.bosses.map((boss) =>
     boss.id === nomination.bossId
       ? {
           ...boss,
           jobTitle: nomination.jobTitle,
           jobDescription: nomination.jdText,
+          boardTags,
           nominationCount: existing ? boss.nominationCount : boss.nominationCount + 1,
           lastActiveLabel: '刚刚更新',
         }

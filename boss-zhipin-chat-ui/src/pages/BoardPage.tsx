@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAppState } from '@/app/state';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { PanelCard } from '@/components/ui/PanelCard';
 import { RankRow } from '@/components/board/RankRow';
 import type { BoardType, BossProfile } from '@/types/domain';
@@ -56,7 +57,7 @@ export function BoardPage() {
     }
   }, [dispatch, selectedBoard, state.boards.selectedBoard]);
 
-  const boardBosses = useMemo(() => {
+  const visibleBosses = useMemo(() => {
     const bosses = selectedBoard === 'nice_hr' ? state.bosses.filter((boss) => boss.boardTags.includes('Nice HR')) : state.bosses;
     return [...bosses].sort(sortBosses);
   }, [selectedBoard, state.bosses]);
@@ -91,13 +92,22 @@ export function BoardPage() {
           </div>
         </PanelCard>
 
-        <div className="space-y-4">
-          {boardBosses.map((boss, index) => (
-            <Fragment key={boss.id}>
-              <RankRow boss={boss} index={index} board={selectedBoard} />
-            </Fragment>
-          ))}
-        </div>
+        {visibleBosses.length ? (
+          <div className="space-y-4">
+            {visibleBosses.map((boss, index) => (
+              <Fragment key={boss.id}>
+                <RankRow boss={boss} index={index} board={selectedBoard} />
+              </Fragment>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="暂无数据，成为第一个提名的人"
+            description="当前榜单还没有足够数据形成展示结果。补一条提名后，这里会优先出现最新变化。"
+            actionLabel="去提名"
+            onAction={() => navigate('/nominate')}
+          />
+        )}
       </div>
 
       <PanelCard className="flex h-fit flex-col gap-4 border-cyan-100 bg-white/92">

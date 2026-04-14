@@ -15,7 +15,8 @@ function resolveBoss(mode: PlayMode, bosses: BossProfile[], bossId?: string) {
     return bosses.find((boss) => boss.id === bossId) ?? bosses[0];
   }
 
-  return bosses[0];
+  const randomIndex = Math.floor(Math.random() * bosses.length);
+  return bosses[randomIndex] ?? bosses[0];
 }
 
 function buildTurn(boss: BossProfile, index: number): PlayTurn {

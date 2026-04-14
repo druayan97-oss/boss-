@@ -1,12 +1,12 @@
-import { Fragment, type ReactNode } from 'react';
-import { useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Fragment, type ReactNode, useEffect, useMemo } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useAppState } from '@/app/state';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { MessageBubble } from '@/components/play/MessageBubble';
 import { SessionItem } from '@/components/play/SessionItem';
 import { BossMetaCard } from '@/components/play/BossMetaCard';
+import { LeaveSessionDialog } from '@/components/play/LeaveSessionDialog';
 import { applyDecision } from '@/lib/play';
 import type { TurnDecision } from '@/types/domain';
 import { PlayLandingPage } from '@/pages/PlayLandingPage';
@@ -26,11 +26,9 @@ export function PlaySessionPage() {
       return state.play.sessions.find((item) => item.id === id) ?? null;
     }
 
-    const activeSession = state.play.activeSessionId
+    return state.play.activeSessionId
       ? state.play.sessions.find((item) => item.id === state.play.activeSessionId) ?? null
       : null;
-
-    return activeSession ?? state.play.sessions[0] ?? null;
   }, [id, state.play.activeSessionId, state.play.sessions]);
 
   const boss = useMemo(() => {
@@ -41,8 +39,18 @@ export function PlaySessionPage() {
     return state.bosses.find((item) => item.id === session.bossId) ?? state.bosses[0] ?? null;
   }, [session, state.bosses]);
 
+  useEffect(() => {
+    return () => {
+      dispatch({ type: 'ui/close-leave-confirm' });
+    };
+  }, [dispatch]);
+
   if (!session || !boss || !session.turns.length) {
     return <PlayLandingPage />;
+  }
+
+  if (session.finished) {
+    return <Navigate replace to={`/play/result/${session.id}`} />;
   }
 
   const activeTurnIndex = Math.min(session.turnIndex, session.turns.length - 1);
@@ -79,8 +87,13 @@ export function PlaySessionPage() {
             </p>
           </div>
 
-          <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600">
-            第 {Math.min(activeTurnIndex + 1, session.turns.length)} 轮 · 练习素材
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600">
+              第 {Math.min(activeTurnIndex + 1, session.turns.length)} 轮 · 练习素材
+            </div>
+            <Button tone="default" onClick={() => dispatch({ type: 'ui/open-leave-confirm' })}>
+              离开本局
+            </Button>
           </div>
         </div>
 
@@ -103,6 +116,16 @@ export function PlaySessionPage() {
       <div className="xl:sticky xl:top-6">
         <BossMetaCard boss={boss} />
       </div>
+
+      {state.ui.confirmLeaveOpen ? (
+        <LeaveSessionDialog
+          onCancel={() => dispatch({ type: 'ui/close-leave-confirm' })}
+          onConfirm={() => {
+            dispatch({ type: 'ui/close-leave-confirm' });
+            navigate('/play');
+          }}
+        />
+      ) : null}
     </section>
   );
 }

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useAppState } from '@/app/state';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -22,7 +22,9 @@ export function PlayResultPage() {
       return state.play.sessions.find((item) => item.id === id) ?? null;
     }
 
-    return state.play.sessions.find((item) => item.id === state.play.activeSessionId) ?? state.play.sessions[0] ?? null;
+    return state.play.activeSessionId
+      ? state.play.sessions.find((item) => item.id === state.play.activeSessionId) ?? null
+      : null;
   }, [id, state.play.activeSessionId, state.play.sessions]);
 
   const boss = useMemo(() => {
@@ -35,6 +37,10 @@ export function PlayResultPage() {
 
   if (!session || !boss) {
     return <PlayLandingPage />;
+  }
+
+  if (!session.finished) {
+    return <Navigate replace to={`/play/session/${session.id}`} />;
   }
 
   const summary = getAccuracy(session);

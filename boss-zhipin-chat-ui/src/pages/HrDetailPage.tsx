@@ -4,6 +4,7 @@ import { useAppState } from '@/app/state';
 import { BoardType } from '@/types/domain';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { PanelCard } from '@/components/ui/PanelCard';
 
 function formatDateTime(value: string) {
@@ -38,7 +39,7 @@ export function HrDetailPage() {
   const { state } = useAppState();
 
   const boss = state.bosses.find((item) => item.id === id);
-  const nominations = useMemo(() => state.nominations.filter((nomination) => nomination.bossId === id), [id, state.nominations]);
+  const relatedNominations = useMemo(() => state.nominations.filter((nomination) => nomination.bossId === id), [id, state.nominations]);
 
   if (!boss) {
     return (
@@ -106,37 +107,46 @@ export function HrDetailPage() {
             <h2 className="text-xl font-semibold text-slate-900">相关提名摘要</h2>
             <p className="mt-1 text-sm text-slate-600">来自当前种子数据的提名记录。</p>
           </div>
-          <Badge tone="neutral">{nominations.length} 条</Badge>
+          <Badge tone="neutral">{relatedNominations.length} 条</Badge>
         </div>
 
-        <div className="space-y-4">
-          {nominations.map((nomination) => (
-            <div key={nomination.id} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    {nomination.labels.map((label) => (
-                      <Fragment key={label}>
-                        <Badge tone={getTagTone(label)}>{label}</Badge>
-                      </Fragment>
-                    ))}
+        {relatedNominations.length ? (
+          <div className="space-y-4">
+            {relatedNominations.map((nomination) => (
+              <div key={nomination.id} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      {nomination.labels.map((label) => (
+                        <Fragment key={label}>
+                          <Badge tone={getTagTone(label)}>{label}</Badge>
+                        </Fragment>
+                      ))}
+                    </div>
+                    <h3 className="text-base font-semibold text-slate-900">
+                      {nomination.hrName} · {nomination.companyName}
+                    </h3>
+                    <p className="text-sm text-slate-600">{nomination.jobTitle}</p>
                   </div>
-                  <h3 className="text-base font-semibold text-slate-900">
-                    {nomination.hrName} · {nomination.companyName}
-                  </h3>
-                  <p className="text-sm text-slate-600">{nomination.jobTitle}</p>
+
+                  <div className="text-sm text-slate-500">
+                    <p>创建于 {formatDateTime(nomination.createdAt)}</p>
+                    <p className="mt-1">更新于 {formatDateTime(nomination.updatedAt)}</p>
+                  </div>
                 </div>
 
-                <div className="text-sm text-slate-500">
-                  <p>创建于 {formatDateTime(nomination.createdAt)}</p>
-                  <p className="mt-1">更新于 {formatDateTime(nomination.updatedAt)}</p>
-                </div>
+                <p className="mt-4 text-sm leading-6 text-slate-700">{nomination.greeting}</p>
               </div>
-
-              <p className="mt-4 text-sm leading-6 text-slate-700">{nomination.greeting}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="暂无更多提名摘要，成为第一个补充信息的人。"
+            description="当前对象还没有更多可展示的脱敏摘要，补一条提名后，这里会优先展示你的更新。"
+            actionLabel="去提名"
+            onAction={() => navigate(`/nominate?bossId=${boss.id}`)}
+          />
+        )}
       </PanelCard>
     </section>
   );
